@@ -32,3 +32,5 @@ class VectorN {
         // Distance between two vectors
         double distance(const VectorN& other) const;
 };
+
+    VectorN operator*(double scalar, const VectorN& vector);

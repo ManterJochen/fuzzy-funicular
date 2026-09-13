@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "../vector/VectorN.h"
+
 class MatrixN
 {
 protected:
@@ -24,6 +26,7 @@ public:
     // Matrix * Vector
     std::vector<double> operator*(
         const std::vector<double>& vec) const;
+    VectorN operator*(const VectorN& vector) const;
 
     // Matrix special operations
     double determinant() const;
@@ -44,4 +47,5 @@ public:
     bool isIdentity() const;
     bool isSymmetric() const;
     bool isInvertible() const;
+    bool isFinite() const;
 };

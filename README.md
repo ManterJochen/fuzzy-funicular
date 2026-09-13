@@ -363,9 +363,9 @@ Alle drei Befehle müssen erfolgreich sein, bevor weitere Pakete wachsen.
 ### Noch nötig
 
 ```text
-[ ] NaN- und Infinity-Prüfungen
-[ ] approximatelyZero
-[ ] einheitliche Verwendung von Constants::PI in Angle
+[x] NaN- und Infinity-Prüfungen
+[x] approximatelyZero
+[x] einheitliche Verwendung von Constants::PI in Angle
 [ ] Tests für Grad, Radiant und Grenzwerte
 ```
 
@@ -376,15 +376,15 @@ Alle drei Befehle müssen erfolgreich sein, bevor weitere Pakete wachsen.
 ```text
 [x] src/math/vector/Vector2.h
 [x] src/math/vector/Vector2.cpp
-[~] src/math/vector/Vector3.h
-[~] src/math/vector/Vector3.cpp
+[x] src/math/vector/Vector3.h
+[x] src/math/vector/Vector3.cpp
 [x] src/math/vector/Vector4.h
 [x] src/math/vector/Vector4.cpp
 [x] src/math/vector/Vector6.h
 [x] src/math/vector/Vector6.cpp
-[~] src/math/vector/VectorN.h
-[~] src/math/vector/VectorN.cpp
-[!] src/math/vector/Vector.h
+[x] src/math/vector/VectorN.h
+[x] src/math/vector/VectorN.cpp
+[x] src/math/vector/Vector.h
 ```
 
 ### Verantwortung
@@ -399,11 +399,11 @@ Alle drei Befehle müssen erfolgreich sein, bevor weitere Pakete wachsen.
 ### Noch nötig
 
 ```text
-[ ] eine Vector-Architektur auswählen
-[ ] length, squaredLength, normalized und distance vollständig implementieren
-[ ] Nullvektor-Normalisierung definiert behandeln
-[ ] Divisionen und Dimensionen einheitlich prüfen
-[ ] operator*(scalar) auch als freie Funktion ermöglichen
+[x] eine Vector-Architektur auswählen
+[x] length, squaredLength, normalized und distance vollständig implementieren
+[x] Nullvektor-Normalisierung definiert behandeln
+[x] Divisionen und Dimensionen einheitlich prüfen
+[x] operator*(scalar) auch als freie Funktion ermöglichen
 [ ] Vector-Unit-Tests schreiben
 ```
 
@@ -414,14 +414,14 @@ Alle drei Befehle müssen erfolgreich sein, bevor weitere Pakete wachsen.
 ```text
 [x] src/math/matrix/Matrix2.h
 [x] src/math/matrix/Matrix2.cpp
-[~] src/math/matrix/Matrix3.h
-[~] src/math/matrix/Matrix3.cpp
-[!] src/math/matrix/Matrix4.h
-[!] src/math/matrix/Matrix4.cpp
-[x] src/math/matrix/Matrix6.h
-[x] src/math/matrix/Matrix6.cpp
-[~] src/math/matrix/MatrixN.h
-[~] src/math/matrix/MatrixN.cpp
+[x] src/math/matrix/Matrix3.h
+[x] src/math/matrix/Matrix3.cpp
+[x] src/math/matrix/Matrix4.h
+[x] src/math/matrix/Matrix4.cpp
+[ ] src/math/matrix/Matrix6.h
+[ ] src/math/matrix/Matrix6.cpp
+[x] src/math/matrix/MatrixN.h
+[x] src/math/matrix/MatrixN.cpp
 ```
 
 ### Verantwortung
@@ -435,11 +435,11 @@ Alle drei Befehle müssen erfolgreich sein, bevor weitere Pakete wachsen.
 ### Aktuelle Probleme
 
 ```text
-[ ] doppelte Matrix4-Konstruktor-Definition entfernen
-[ ] fehlende beziehungsweise inkonsistente Matrix4-Initializer-Implementierung prüfen
-[ ] Inversion mit Partial Pivoting versehen
-[ ] exakte Identity- und Symmetrievergleiche durch Toleranzen ersetzen
-[ ] rekursive Determinante nur für kleine Matrizen verwenden
+[x] doppelte Matrix4-Konstruktor-Definition entfernen
+[x] fehlende beziehungsweise inkonsistente Matrix4-Initializer-Implementierung prüfen
+[x] Inversion mit Partial Pivoting versehen
+[x] exakte Identity- und Symmetrievergleiche durch Toleranzen ersetzen
+[x] rekursive Determinante durch pivotierende Elimination ersetzen
 ```
 
 ### Noch zu erstellen
@@ -873,17 +873,20 @@ Besonders wichtige Tests:
 [ ] keine NaN- oder Infinity-Werte nach einem Simulationsschritt
 ```
 
-# Nächster konkreter Arbeitsschritt
+# Übergabepunkt: Linear Algebra
 
-Nicht direkt Quaternionen, Rendering oder RL bauen. Der nächste Slice ist:
+Scalar, Vector und die Matrix-Basis sind fertiggestellt. `Matrix6` bleibt
+bewusst offen. Der nächste eigene Bereich beginnt hier:
 
 ```text
-1. CMakeLists.txt
-2. CTest-Test
-3. Matrix4-Doppeldeklaration beheben
-4. VectorN vervollständigen oder Vector.h als neue Basis auswählen
-5. Vector- und Matrix-Tests
-6. erster grüner Math-Build
+1. linear_algebra/Norms.h/.cpp
+2. linear_algebra/LinearSystem.h/.cpp
+3. linear_algebra/LU.h/.cpp
+4. linear_algebra/QR.h/.cpp
+5. linear_algebra/SVD.h/.cpp
+6. linear_algebra/PseudoInverse.h/.cpp
 ```
 
-Erst wenn dieser Slice grün ist, beginnt die Implementierung von Rotation und Transform.
+Dabei sollen die Basisoperationen in `VectorN` und `MatrixN` nicht dupliziert
+werden. `linear_algebra` ergänzt Algorithmen wie Solver, Zerlegungen und
+Pseudoinversen auf Basis der fertigen Scalar-, Vector- und Matrixklassen.

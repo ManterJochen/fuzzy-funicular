@@ -20,4 +20,19 @@ namespace Tolerance {
 
         return difference <= largest * relativeTolerance;
     }
+
+    bool approximatelyZero(double value, double absoluteTolerance)
+    {
+        return std::abs(value) <= absoluteTolerance;
+    }
+
+    bool isFinite(double value)
+    {
+        return std::isfinite(value);
+    }
+
+    bool isNaN(double value)
+    {
+        return std::isnan(value);
+    }
 }

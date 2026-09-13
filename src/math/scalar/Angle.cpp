@@ -1,5 +1,6 @@
 #include <cmath>
 #include "Angle.h"
+#include "Constants.h"
 
 // Implementation of the Angle class
 Angle::Angle(double radians)
@@ -14,7 +15,7 @@ Angle::Angle(double radians)
 
 Angle Angle::fromDegrees(double degrees)
 {
-    return Angle(degrees * 3.141592653589793 / 180.0);
+    return Angle(degrees * constants::DEGREES_TO_RADIANS);
 }
 
 Angle Angle::fromRadians(double radians)
@@ -31,7 +32,7 @@ double Angle::radians() const
 // Returns the angle in degrees
 double Angle::degrees() const
 {
-    return radians_ * 180.0 / 3.141592653589793;
+    return radians_ * constants::RADIANS_TO_DEGREES;
 }
 
 // sin of the angle

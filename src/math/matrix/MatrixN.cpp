@@ -1,6 +1,7 @@
 #include "MatrixN.h"
 #include "../scalar/Tolerance.h"
 
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
@@ -9,10 +10,11 @@
 //==================================
 
 // Check for valid matrix dimensions
-MatrixN::MatrixN(int rows, int cols) : data_(rows, std::vector<double>(cols, 0.0)){
+MatrixN::MatrixN(int rows, int cols) {
     if (rows <= 0 || cols <= 0) {
         throw std::invalid_argument("Matrix dimensions must be positive");
     }
+    data_.assign(rows, std::vector<double>(cols, 0.0));
 }
 
 // Return the number of rows in the matrix
@@ -108,6 +110,21 @@ std::vector<double> MatrixN::operator*(const std::vector<double>& vec) const {
     return result;
 }
 
+VectorN MatrixN::operator*(const VectorN& vector) const {
+    if (cols() != vector.dimension()) {
+        throw std::invalid_argument(
+            "Matrix and vector dimensions must match for multiplication");
+    }
+
+    VectorN result(rows());
+    for (int row = 0; row < rows(); ++row) {
+        for (int column = 0; column < cols(); ++column) {
+            result[row] += (*this)(row, column) * vector[column];
+        }
+    }
+    return result;
+}
+
 //==========================
 // Matrix special operations
 //==========================
@@ -117,29 +134,39 @@ double MatrixN::determinant() const {
     if (!isSquare()) {
         throw std::invalid_argument("Determinant is defined only for square matrices");
     }
-    // Base case for 1x1 matrix
-    if (rows() == 1) {
-        return (*this)(0, 0);
-    }
-    // Base case for 2x2 matrix
-    if (rows() == 2) {
-        return (*this)(0, 0) * (*this)(1, 1) - (*this)(0, 1) * (*this)(1, 0);
-    }
-    // Recursive case for NxN matrix
-    double det = 0.0;
-    for (int j = 0; j < cols(); ++j) {
-        MatrixN subMatrix(rows() - 1, cols() - 1);
-        for (int i = 1; i < rows(); ++i) {
-            int subCol = 0;
-            for (int k = 0; k < cols(); ++k) {
-                if (k == j) continue;
-                subMatrix(i - 1, subCol) = (*this)(i, k);
-                ++subCol;
+    MatrixN copy(*this);
+    double determinant = 1.0;
+    const int size = rows();
+
+    for (int pivotColumn = 0; pivotColumn < size; ++pivotColumn) {
+        int pivotRow = pivotColumn;
+        for (int row = pivotColumn + 1; row < size; ++row) {
+            if (std::abs(copy(row, pivotColumn)) >
+                std::abs(copy(pivotRow, pivotColumn))) {
+                pivotRow = row;
             }
         }
-        det += (j % 2 == 0 ? 1 : -1) * (*this)(0, j) * subMatrix.determinant();
+
+        if (Tolerance::approximatelyEqual(copy(pivotRow, pivotColumn), 0.0)) {
+            return 0.0;
+        }
+
+        if (pivotRow != pivotColumn) {
+            std::swap(copy.data_[pivotRow], copy.data_[pivotColumn]);
+            determinant = -determinant;
+        }
+
+        const double pivot = copy(pivotColumn, pivotColumn);
+        determinant *= pivot;
+        for (int row = pivotColumn + 1; row < size; ++row) {
+            const double factor = copy(row, pivotColumn) / pivot;
+            for (int column = pivotColumn + 1; column < size; ++column) {
+                copy(row, column) -= factor * copy(pivotColumn, column);
+            }
+        }
     }
-    return det;
+
+    return determinant;
 }
 
 // transpose of the matrix
@@ -155,8 +182,8 @@ MatrixN MatrixN::transpose() const {
 
 // inverse of the matrix
 MatrixN MatrixN::inverse() const {
-    if (!isInvertible()) {
-        throw std::invalid_argument("Matrix is not invertible");
+    if (!isSquare()) {
+        throw std::invalid_argument("Only square matrices can be inverted");
     }
     int n = rows();
     MatrixN result(n, n);
@@ -167,23 +194,38 @@ MatrixN MatrixN::inverse() const {
         result(i, i) = 1.0;
     }
 
-    // Perform Gaussian elimination
-    for (int i = 0; i < n; ++i) {
-        // Find the pivot
-        double pivot = copy(i, i);
-        if (Tolerance::approximatelyEqual(pivot, 0.0)) {
-            throw std::runtime_error("Numerical instability encountered during inversion");
+    for (int pivotColumn = 0; pivotColumn < n; ++pivotColumn) {
+        int pivotRow = pivotColumn;
+        for (int row = pivotColumn + 1; row < n; ++row) {
+            if (std::abs(copy(row, pivotColumn)) >
+                std::abs(copy(pivotRow, pivotColumn))) {
+                pivotRow = row;
+            }
         }
-        for (int j = 0; j < n; ++j) {
-            copy(i, j) /= pivot;
-            result(i, j) /= pivot;
+
+        if (Tolerance::approximatelyEqual(copy(pivotRow, pivotColumn), 0.0)) {
+            throw std::invalid_argument("Matrix is not invertible");
         }
-        for (int k = 0; k < n; ++k) {
-            if (k == i) continue;
-            double factor = copy(k, i);
-            for (int j = 0; j < n; ++j) {
-                copy(k, j) -= factor * copy(i, j);
-                result(k, j) -= factor * result(i, j);
+
+        if (pivotRow != pivotColumn) {
+            std::swap(copy.data_[pivotRow], copy.data_[pivotColumn]);
+            std::swap(result.data_[pivotRow], result.data_[pivotColumn]);
+        }
+
+        const double pivot = copy(pivotColumn, pivotColumn);
+        for (int column = 0; column < n; ++column) {
+            copy(pivotColumn, column) /= pivot;
+            result(pivotColumn, column) /= pivot;
+        }
+
+        for (int row = 0; row < n; ++row) {
+            if (row == pivotColumn) {
+                continue;
+            }
+            const double factor = copy(row, pivotColumn);
+            for (int column = 0; column < n; ++column) {
+                copy(row, column) -= factor * copy(pivotColumn, column);
+                result(row, column) -= factor * result(pivotColumn, column);
             }
         }
     }
@@ -271,9 +313,9 @@ bool MatrixN::isIdentity() const {
     }
     for (int i = 0; i < rows(); ++i) {
         for (int j = 0; j < cols(); ++j) {
-            if (i == j && (*this)(i, j) != 1.0) {
+            if (i == j && !Tolerance::approximatelyEqual((*this)(i, j), 1.0)) {
                 return false;
-            } else if (i != j && (*this)(i, j) != 0.0) {
+            } else if (i != j && !Tolerance::approximatelyEqual((*this)(i, j), 0.0)) {
                 return false;
             }
         }
@@ -288,7 +330,7 @@ bool MatrixN::isSymmetric() const {
     }
     for (int i = 0; i < rows(); ++i) {
         for (int j = 0; j < cols(); ++j) {
-            if ((*this)(i, j) != (*this)(j, i)) {
+            if (!Tolerance::approximatelyEqual((*this)(i, j), (*this)(j, i))) {
                 return false;
             }
         }
@@ -302,4 +344,15 @@ bool MatrixN::isInvertible() const {
         return false;
     }
     return !Tolerance::approximatelyEqual(determinant(), 0.0);
+}
+
+bool MatrixN::isFinite() const {
+    for (int row = 0; row < rows(); ++row) {
+        for (int column = 0; column < cols(); ++column) {
+            if (!Tolerance::isFinite((*this)(row, column))) {
+                return false;
+            }
+        }
+    }
+    return true;
 }

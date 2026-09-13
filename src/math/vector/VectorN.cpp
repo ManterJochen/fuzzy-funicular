@@ -1,4 +1,6 @@
 #include "VectorN.h"
+#include "../scalar/Tolerance.h"
+
 #include <cmath>
 #include <stdexcept>
 
@@ -80,7 +82,7 @@ double VectorN::dot(const VectorN& other) const {
 
 VectorN VectorN::normalized() const {
     double len = length();
-    if (len == 0.0) {
+    if (Tolerance::approximatelyZero(len)) {
         throw std::invalid_argument("Cannot normalize zero-length vector");
     }
     return (*this) / len;
@@ -96,4 +98,8 @@ double VectorN::squaredLength() const {
 
 double VectorN::length() const {
     return std::sqrt(squaredLength());
+}
+
+VectorN operator*(double scalar, const VectorN& vector) {
+    return vector * scalar;
 }
