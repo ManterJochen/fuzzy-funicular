@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VectorN.h"
-#include "src/math/scalar/Angle.h"
+#include "../scalar/Angle.h"
 
 class Vector3 : public VectorN {
     public:

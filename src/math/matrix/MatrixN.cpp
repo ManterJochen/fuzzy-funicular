@@ -1,5 +1,5 @@
 #include "MatrixN.h"
-#include "src/math/scalar/Tolerance.h"
+#include "../scalar/Tolerance.h"
 
 #include <cmath>
 #include <stdexcept>

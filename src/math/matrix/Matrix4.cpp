@@ -15,6 +15,29 @@ Matrix4::Matrix4()
 {
 }
 
+Matrix4::Matrix4(
+    std::initializer_list<std::initializer_list<double>> values)
+    : MatrixN(4, 4)
+{
+    if (values.size() != 4) {
+        throw std::invalid_argument("Matrix4 requires 4 rows");
+    }
+
+    int row = 0;
+    for (const auto& valuesRow : values) {
+        if (valuesRow.size() != 4) {
+            throw std::invalid_argument("Matrix4 requires 4 columns");
+        }
+
+        int column = 0;
+        for (double value : valuesRow) {
+            data_[row][column] = value;
+            ++column;
+        }
+        ++row;
+    }
+}
+
 Matrix4::Matrix4(const MatrixN& matrix)
     : MatrixN(matrix)
 {
@@ -22,12 +45,6 @@ Matrix4::Matrix4(const MatrixN& matrix)
     {
         throw std::invalid_argument(
             "Matrix4 must be 4x4");
-    }
-}
-
-Matrix4::Matrix4(const MatrixN& matrix) : MatrixN(4, 4) {
-    if (matrix.rows() != 4 || matrix.cols() != 4) {
-        throw std::invalid_argument("Matrix4 must be 4x4");
     }
 }
 
